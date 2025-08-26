@@ -1,0 +1,186 @@
+[
+
+
+{
+    "id": "qa_047", 
+    "prompt": "Risk=High (0.86); Devir=1185, IplikNumara=30/1, En=400, Karisim=PES/CO, DurusOrani=0.14. Influencers: Devir(↑), En(↑), DurusOrani(↑), IplikNumara(↓). What is the interpretation and actions?",
+    "completion": {
+      "summary": "Yüksek risk seviyesi, yüksek devir, geniş en ve artan duruş oranından kaynaklanmaktadır. İplik numarasının etkisi sınırlıdır.",
+      "root_cause_analysis": "Devir ve en parametreleri, bu iplik türü için kritik eşiklerin üzerinde. Bu kombinasyon atkı kopuşunu tetiklemiş, bu da duruş süresini ve riski artırmıştır.",
+      "immediate_actions": [
+        "Deviri 1150 rpm seviyesine düşür.",
+        "Mümkünse eni 380-390 cm aralığına çek.",
+        "Tezgah 12 için acil atkı iplik rehberi ve gerilim kontrolü yap."
+      ],
+      "long_term_actions": [
+        "Aynı parametrelerle çalışılacaksa Tezgah 12 yerine Tezgah 8 (daha yeni model) kullanılmalı.",
+        "PES/CO karışımı 30/1 iplik için standart çalışma prosedürü (SOP) gözden geçirilmeli."
+      ],
+      "expected_outcome": "Devir ve en düşürüldüğünde risk skoru 0.40'ın altına, kalite 0.85'in üzerine çıkabilir."
+    },
+    "context": {
+      "risk_score": 0.86,
+      "features": {
+        "Devir": 1185,
+        "IplikNumara": "30/1",
+        "En": 400,
+        "Karisim": "PES/CO",
+        "DurusOrani": 0.14
+      },
+      "xai": {
+        "shap_values": {
+          "Devir": 0.15,
+          "En": 0.10,
+          "DurusOrani": 0.08,
+          "IplikNumara": -0.05
+        }
+      },
+      "source_model": "risk_model_v3",
+      "timestamp": "2024-01-15T14:30:00Z" 
+    },
+    "metadata": {
+      "expert_verified": true, 
+      "severity": "High", 
+      "equipment": "Tezgah 12", 
+      "tags": ["atki_kopusu", "devir_asiimi", "eni_genis"] 
+    }
+  },
+
+  {
+    "id": "qa_048",
+    "prompt": "Risk=High (0.83); Devir=1200, IplikNumara=20/1, En=390, Karisim=CO, DurusOrani=0.13. Influencers: Devir(↑), DurusOrani(↑), IplikNumara(↓). What is the interpretation and actions?",
+    "completion": {
+      "summary": "Yüksek devir ve düşük iplik numarası kombinasyonu sistemde stres yaratmakta, bu da duruş oranını artırmaktadır.",
+      "root_cause_analysis": "20/1 ipliğin daha kalın yapısı yüksek devirle birleşince atkı ipliği gerilim altında kalmış. Bu da kopuşlara ve duruşlara neden olmuş.",
+      "immediate_actions": [
+        "Deviri 1150 rpm’ye indir.",
+        "İplik tansiyon kontrolü yap.",
+        "CO iplik için özel giriş ayarı yap (denge tamburu kontrolü)."
+      ],
+      "long_term_actions": [
+        "20/1 CO iplikleri için ayrı SOP oluştur.",
+        "Devir/numara matrisi yeniden değerlendirilmeli."
+      ],
+      "expected_outcome": "Devir düşürülüp uygun iplik tansiyonu sağlandığında risk skoru %50 azalabilir."
+    },
+    "context": {
+      "risk_score": 0.83,
+      "features": {
+        "Devir": 1200,
+        "IplikNumara": "20/1",
+        "En": 390,
+        "Karisim": "CO",
+        "DurusOrani": 0.13
+      },
+      "xai": {
+        "shap_values": {
+          "Devir": 0.18,
+          "DurusOrani": 0.10,
+          "IplikNumara": -0.07
+        }
+      },
+      "source_model": "risk_model_v3",
+      "timestamp": "2024-02-10T10:45:00Z"
+    },
+    "metadata": {
+      "expert_verified": true,
+      "severity": "High",
+      "equipment": "Tezgah 7",
+      "tags": ["devir_yuksek", "iplik_kalın", "co_uyumsuz"]
+    }
+ },
+
+ {
+    "id": "qa_049",
+    "prompt": "Risk=High (0.89); Devir=1170, IplikNumara=40/1, En=405, Karisim=PES/CO, DurusOrani=0.16. Influencers: En(↑), DurusOrani(↑), Devir(↑). What is the interpretation and actions?",
+    "completion": {
+      "summary": "Geniş en ve yüksek devir, iplik kopuşlarını ve duruş oranını artırarak riski yükseltti.",
+      "root_cause_analysis": "405 cm en, atkı uzunluğunu artırarak PES/CO karışımı iplikte esneme sınırlarını zorladı. Devir ve duruş oranı etkisini pekiştirdi.",
+      "immediate_actions": [
+        "Eni 390 cm’ye düşür.",
+        "Deviri 1140 seviyesine indir.",
+        "Atkı tansiyon ve nozül çıkış basıncı kontrolü yap."
+      ],
+      "long_term_actions": [
+        "En parametresi için iplik bazlı üst limit tanımlanmalı.",
+        "Geniş enlerde kullanılan nozül ve giriş sistemleri gözden geçirilmeli."
+      ],
+      "expected_outcome": "En ve devir birlikte optimize edilirse duruş oranı %40 düşebilir."
+    },
+    "context": {
+      "risk_score": 0.89,
+      "features": {
+        "Devir": 1170,
+        "IplikNumara": "40/1",
+        "En": 405,
+        "Karisim": "PES/CO",
+        "DurusOrani": 0.16
+      },
+      "xai": {
+        "shap_values": {
+          "En": 0.17,
+          "DurusOrani": 0.11,
+          "Devir": 0.09
+        }
+      },
+      "source_model": "risk_model_v3",
+      "timestamp": "2024-03-12T08:20:00Z"
+    },
+    "metadata": {
+      "expert_verified": true,
+      "severity": "High",
+      "equipment": "Tezgah 9",
+      "tags": ["genis_en", "atki_kopusu", "devir_riski"]
+    }
+  },
+
+  
+  {
+    "id": "qa_050",
+    "prompt": "Risk=High (0.81); Devir=1165, IplikNumara=30/1, En=395, Karisim=CV, DurusOrani=0.12. Influencers: Devir(↑), Karisim(CV)(↑), En(↑). What is the interpretation and actions?",
+    "completion": {
+      "summary": "Viskoz karışım iplikte yüksek devir ve geniş en kopuş oranını artırmıştır.",
+      "root_cause_analysis": "CV iplikler düşük mukavemetlidir, yüksek devir ve geniş en esneme sınırlarını aşmış, bu da iplik kopuşlarına neden olmuştur.",
+      "immediate_actions": [
+        "Devir 1130’a çekilmeli.",
+        "CV iplik için atkı çıkış basıncı ve yön ayarı yapılmalı.",
+        "Nozül sıcaklık ve nem sensörü kontrol edilmeli."
+      ],
+      "long_term_actions": [
+        "CV iplikler için özel parametre seti hazırlanmalı.",
+        "Makine besleme sistemine karışım bazlı gerilim sensörü eklenmeli."
+      ],
+      "expected_outcome": "Devir düşürülürse risk skoru 0.45’e kadar gerileyebilir."
+    },
+    "context": {
+      "risk_score": 0.81,
+      "features": {
+        "Devir": 1165,
+        "IplikNumara": "30/1",
+        "En": 395,
+        "Karisim": "CV",
+        "DurusOrani": 0.12
+      },
+      "xai": {
+        "shap_values": {
+          "Devir": 0.14,
+          "Karisim": 0.12,
+          "En": 0.09
+        }
+      },
+      "source_model": "risk_model_v3",
+      "timestamp": "2024-04-22T15:00:00Z"
+    },
+    "metadata": {
+      "expert_verified": true,
+      "severity": "High",
+      "equipment": "Tezgah 5",
+      "tags": ["cv_kopusu", "devir_kritik", "parametre_uyumsuzlugu"]
+    }
+  }
+
+  
+  
+]
+
+  
