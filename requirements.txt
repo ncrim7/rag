@@ -2,3 +2,6 @@ openai
 chromadb
 python-dotenv
 tqdm
+kivy
+kivymd
+pandas

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Kumaş Üretim Analizi Sistemi</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js" rel="stylesheet">
+</head>
+<body class="bg-gray-900 min-h-screen">
+    <div class="container max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="header bg-gray-800 shadow-2xl rounded-lg mb-8 border border-gray-700">
+            <div class="header-content p-6">
+                <div class="logo flex items-center gap-4">
+                    <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                        <i class="fas fa-brain text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-white">RAG Kumaş Üretim Analizi</h1>
+                        <p class="text-gray-300 mt-1">AI destekli üretim süreç analizi ve optimizasyon</p>
+                    </div>
+                </div>
+                <div class="status-indicator flex items-center gap-2 px-4 py-2 bg-green-900/30 rounded-full border border-green-500/50 backdrop-blur-sm">
+                    <div class="status-dot w-2 h-2 bg-green-400 rounded-full animate-pulse" id="statusDot"></div>
+                    <span class="text-sm font-medium text-green-300" id="statusText">Sistem Hazır</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left Panel - Query Section -->
+            <div class="space-y-6">
+                <!-- Query Interface -->
+                <div class="bg-gray-800 rounded-lg shadow-2xl p-6 border border-gray-700">
+                    <h2 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                        <i class="fas fa-search text-blue-400"></i>
+                        Analiz Sorgusu
+                    </h2>
+                    
+                    <!-- Example Questions -->
+                    <div class="mb-6">
+                        <h3 class="text-sm font-medium text-gray-300 mb-3">Örnek Sorular</h3>
+                        <div class="grid grid-cols-1 gap-2">
+                            <button class="example-question text-left p-3 rounded-lg border border-gray-600 hover:border-blue-400 hover:bg-blue-900/20 transition-colors bg-gray-700/50 text-gray-200" data-question="Riski düşürmek için ne yapmalıyım?">
+                                Riski düşürmek için ne yapmalıyım?
+                            </button>
+                            <button class="example-question text-left p-3 rounded-lg border border-gray-600 hover:border-blue-400 hover:bg-blue-900/20 transition-colors bg-gray-700/50 text-gray-200" data-question="Yüksek devir değerlerinde ne yapmalıyım?">
+                                Yüksek devir değerlerinde ne yapmalıyım?
+                            </button>
+                            <button class="example-question text-left p-3 rounded-lg border border-gray-600 hover:border-blue-400 hover:bg-blue-900/20 transition-colors bg-gray-700/50 text-gray-200" data-question="Düşük risk seviyelerinde hangi metriklere dikkat edilmeli?">
+                                Düşük risk seviyelerinde hangi metriklere dikkat edilmeli?
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Custom Question -->
+                    <div class="mb-6">
+                        <h3 class="text-sm font-medium text-gray-300 mb-3">Özel Soru</h3>
+                        <textarea 
+                            id="questionInput" 
+                            placeholder="Kumaş üretim süreçleri hakkında sorunuzu yazın..."
+                            rows="4"
+                            class="w-full p-4 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-gray-700 text-gray-200 placeholder-gray-400"
+                        ></textarea>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button id="analyzeBtn" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg">
+                            <i class="fas fa-chart-line"></i>
+                            <span id="analyzeBtnText">Analiz Et</span>
+                        </button>
+                        <button id="clearBtn" class="px-6 py-3 border border-gray-600 text-gray-300 rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center gap-2 bg-gray-700/50">
+                            <i class="fas fa-trash"></i>
+                            Temizle
+                        </button>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="mt-4" id="progressContainer" style="display: none;">
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300" id="progressFill" style="width: 0%"></div>
+                        </div>
+                        <p class="text-sm text-gray-400 mt-2 text-center" id="progressText">İşleniyor...</p>
+                    </div>
+                </div>
+
+                <!-- RAG Methods Overview -->
+                <div class="bg-gray-800 rounded-lg shadow-2xl p-6 border border-gray-700">
+                    <h3 class="text-lg font-semibold text-white mb-4">RAG Metodları</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="rag-method-card p-4 rounded-lg border border-blue-500/30 bg-blue-900/20 backdrop-blur-sm">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-database text-blue-400"></i>
+                                <span class="font-medium text-blue-300">SQL-RAG</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-1">
+                                <div class="bg-gradient-to-r from-blue-500 to-blue-400 h-1 rounded-full" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        <div class="rag-method-card p-4 rounded-lg border border-purple-500/30 bg-purple-900/20 backdrop-blur-sm">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-chart-bar text-purple-400"></i>
+                                <span class="font-medium text-purple-300">SHAP-RAG</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-1">
+                                <div class="bg-gradient-to-r from-purple-500 to-purple-400 h-1 rounded-full" style="width: 70%"></div>
+                            </div>
+                        </div>
+                        <div class="rag-method-card p-4 rounded-lg border border-green-500/30 bg-green-900/20 backdrop-blur-sm">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-file-text text-green-400"></i>
+                                <span class="font-medium text-green-300">Doc-RAG</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-1">
+                                <div class="bg-gradient-to-r from-green-500 to-green-400 h-1 rounded-full" style="width: 90%"></div>
+                            </div>
+                        </div>
+                        <div class="rag-method-card p-4 rounded-lg border border-orange-500/30 bg-orange-900/20 backdrop-blur-sm">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-folder text-orange-400"></i>
+                                <span class="font-medium text-orange-300">Case-RAG</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-1">
+                                <div class="bg-gradient-to-r from-orange-500 to-orange-400 h-1 rounded-full" style="width: 75%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Metrics -->
+                <div class="bg-gray-800 rounded-lg shadow-2xl p-6 border border-gray-700">
+                    <h3 class="text-lg font-semibold text-white mb-4">Sistem Metrikleri</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="metric-card p-4 rounded-lg bg-blue-900/20 border border-blue-500/30 backdrop-blur-sm">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-clock text-blue-400"></i>
+                                <span class="text-sm font-medium text-blue-300">İşlem Süresi</span>
+                            </div>
+                            <div class="text-2xl font-bold text-blue-300" id="processingTime">-</div>
+                        </div>
+                        <div class="metric-card p-4 rounded-lg bg-green-900/20 border border-green-500/30 backdrop-blur-sm">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-shield-alt text-green-400"></i>
+                                <span class="text-sm font-medium text-green-300">Güven Oranı</span>
+                            </div>
+                            <div class="text-2xl font-bold text-green-300" id="confidenceScore">-</div>
+                        </div>
+                        <div class="metric-card p-4 rounded-lg bg-purple-900/20 border border-purple-500/30 backdrop-blur-sm">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-chart-pie text-purple-400"></i>
+                                <span class="text-sm font-medium text-purple-300">RAG Coverage</span>
+                            </div>
+                            <div class="text-2xl font-bold text-purple-300" id="ragCoverage">-</div>
+                        </div>
+                        <div class="metric-card p-4 rounded-lg bg-orange-900/20 border border-orange-500/30 backdrop-blur-sm">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-target text-orange-400"></i>
+                                <span class="text-sm font-medium text-orange-300">Doğruluk Skoru</span>
+                            </div>
+                            <div class="text-2xl font-bold text-orange-300" id="accuracyScore">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Results Section -->
+            <div class="space-y-6">
+                <!-- Process Steps Indicator -->
+                <div class="bg-gray-800 rounded-lg shadow-2xl p-6 border border-gray-700" id="processSteps" style="display: none;">
+                    <h3 class="text-lg font-semibold text-white mb-4">İşlem Adımları</h3>
+                    <div class="flex items-center justify-between">
+                        <div class="step-item flex items-center">
+                            <div class="step-circle w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white text-sm font-medium shadow-lg">1</div>
+                            <span class="ml-2 text-sm font-medium text-gray-300">Intent Detection</span>
+                        </div>
+                        <div class="step-line w-8 h-0.5 bg-green-500"></div>
+                        <div class="step-item flex items-center">
+                            <div class="step-circle w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium animate-pulse shadow-lg">2</div>
+                            <span class="ml-2 text-sm font-medium text-gray-300">RAG Routing</span>
+                        </div>
+                        <div class="step-line w-8 h-0.5 bg-gray-600"></div>
+                        <div class="step-item flex items-center">
+                            <div class="step-circle w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-white text-sm font-medium">3</div>
+                            <span class="ml-2 text-sm font-medium text-gray-300">Evidence Retrieval</span>
+                        </div>
+                        <div class="step-line w-8 h-0.5 bg-gray-600"></div>
+                        <div class="step-item flex items-center">
+                            <div class="step-circle w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-white text-sm font-medium">4</div>
+                            <span class="ml-2 text-sm font-medium text-gray-300">Report Generation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div class="bg-gray-800 rounded-lg shadow-2xl p-6 border border-gray-700">
+                    <h2 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                        <i class="fas fa-clipboard-list text-blue-400"></i>
+                        Analiz Sonuçları
+                    </h2>
+                    
+                    <div class="results-container max-h-96 overflow-y-auto custom-scrollbar" id="resultsContainer">
+                        <div class="welcome-message text-center py-12">
+                            <div class="w-16 h-16 bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/30">
+                                <i class="fas fa-robot text-blue-400 text-2xl"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-white mb-2">Hoş Geldiniz!</h3>
+                            <p class="text-gray-300">Kumaş üretim süreçleri hakkında sorularınızı sorun ve AI destekli analizler alın.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Evidence Details and Prompt Engineering -->
+                <div class="bg-gray-800 rounded-lg shadow-2xl p-6 border border-gray-700" id="evidenceDetails" style="display: none;">
+                    <h3 class="text-lg font-semibold text-white mb-4">Kanıt Detayları ve Prompt Mühendisliği</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Evidence Analysis -->
+                        <div>
+                            <h4 class="text-md font-medium text-white mb-3">Kanıt Analizi</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-2 p-3 rounded-lg bg-blue-900/20 border border-blue-500/30 backdrop-blur-sm">
+                                    <span class="px-2 py-1 text-xs font-medium text-blue-300 bg-blue-500/30 rounded">SQL</span>
+                                    <span class="text-sm text-gray-300">Veritabanı sorgusu sonuçları</span>
+                                </div>
+                                <div class="flex items-center gap-2 p-3 rounded-lg bg-purple-900/20 border border-purple-500/30 backdrop-blur-sm">
+                                    <span class="px-2 py-1 text-xs font-medium text-purple-300 bg-purple-500/30 rounded">SHAP</span>
+                                    <span class="text-sm text-gray-300">Özellik önem analizi</span>
+                                </div>
+                                <div class="flex items-center gap-2 p-3 rounded-lg bg-green-900/20 border border-green-500/30 backdrop-blur-sm">
+                                    <span class="px-2 py-1 text-xs font-medium text-green-300 bg-green-500/30 rounded">Document</span>
+                                    <span class="text-sm text-gray-300">Doküman referansları</span>
+                                </div>
+                                <div class="flex items-center gap-2 p-3 rounded-lg bg-orange-900/20 border border-orange-500/30 backdrop-blur-sm">
+                                    <span class="px-2 py-1 text-xs font-medium text-orange-300 bg-orange-500/30 rounded">Case</span>
+                                    <span class="text-sm text-gray-300">Vaka çalışmaları</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Prompt Details -->
+                        <div>
+                            <h4 class="text-md font-medium text-white mb-3">Prompt Detayları</h4>
+                            <div class="bg-gray-700 rounded-lg p-4 border border-gray-600">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i class="fas fa-code text-gray-400"></i>
+                                    <span class="text-sm font-medium text-gray-300">SQL Sorgu Önizlemesi</span>
+                                </div>
+                                <pre class="text-xs text-gray-300 bg-gray-800 p-2 rounded overflow-x-auto border border-gray-600"><code>SELECT tezgah, risk_skoru, devir, en 
+FROM uretim_verileri 
+WHERE risk_skoru > 0.7 
+ORDER BY risk_skoru DESC</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Features -->
+                <div class="bg-gray-800 rounded-lg shadow-2xl p-6 border border-gray-700">
+                    <h3 class="text-lg font-semibold text-white mb-4">Gelişmiş Özellikler</h3>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="p-4 rounded-lg border border-blue-500/30 bg-blue-900/20 backdrop-blur-sm">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-compress text-blue-400"></i>
+                                <span class="font-medium text-blue-300">Contextual Compression</span>
+                            </div>
+                            <ul class="text-sm text-blue-200 space-y-1">
+                                <li>• İlgili bilgileri önceliklendirme</li>
+                                <li>• Gürültüyü filtreleme</li>
+                                <li>• Bağlam korunması</li>
+                            </ul>
+                        </div>
+                        <div class="p-4 rounded-lg border border-green-500/30 bg-green-900/20 backdrop-blur-sm">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-project-diagram text-green-400"></i>
+                                <span class="font-medium text-green-300">Graph-RAG</span>
+                            </div>
+                            <ul class="text-sm text-green-200 space-y-1">
+                                <li>• İlişkisel veri analizi</li>
+                                <li>• Grafik tabanlı arama</li>
+                                <li>• Bağlantı keşfi</li>
+                            </ul>
+                        </div>
+                        <div class="p-4 rounded-lg border border-purple-500/30 bg-purple-900/20 backdrop-blur-sm">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-tools text-purple-400"></i>
+                                <span class="font-medium text-purple-300">Tool-Augmented RAG</span>
+                            </div>
+                            <ul class="text-sm text-purple-200 space-y-1">
+                                <li>• Harici araç entegrasyonu</li>
+                                <li>• Gerçek zamanlı veri</li>
+                                <li>• API çağrıları</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer bg-gray-800 border-t border-gray-700 rounded-lg shadow-2xl">
+            <div class="footer-content p-6">
+                <p class="text-gray-300">&copy; 2024 RAG Kumaş Üretim Analizi Sistemi. Tüm hakları saklıdır.</p>
+                <div class="footer-links flex gap-6">
+                    <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors flex items-center gap-2">
+                        <i class="fas fa-info-circle"></i> Hakkında
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors flex items-center gap-2">
+                        <i class="fas fa-cog"></i> Ayarlar
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors flex items-center gap-2">
+                        <i class="fas fa-question-circle"></i> Yardım
+                    </a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Analiz ediliyor...</p>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div class="modal" id="errorModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-exclamation-triangle"></i> Hata</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="errorMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="modalOk">Tamam</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

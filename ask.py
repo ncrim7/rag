@@ -1,19 +1,18 @@
 import os
 import sys
 import chromadb
-import openai
 from dotenv import load_dotenv
 from openai import OpenAI
 
+# Ortam değişkenlerini yükle
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# OpenAI istemcisi
+openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # ChromaDB (kalıcı) başlat
-client = chromadb.PersistentClient(path="chroma_db")
+client = chromadb.PersistentClient(path="chromab_db")
 collection = client.get_or_create_collection(name="uretim_analizleri")
-
-# OpenAI istemcisi (hem embedding hem chat için)
-openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def get_embedding(text: str) -> list:
     response = openai_client.embeddings.create(
@@ -22,45 +21,57 @@ def get_embedding(text: str) -> list:
     )
     return response.data[0].embedding
 
-# Soru al (CLI argümanı varsa onu kullan)
-if len(sys.argv) > 1:
-    soru = " ".join(sys.argv[1:])
-else:
-    soru = input("Soru: ")
+def ask_question(soru):
+    """Soru sor ve cevap al"""
+    try:
+        # En alakalı belgeyi sorgula (embedding ile)
+        query_emb = get_embedding(soru)
+        sonuc = collection.query(
+            query_embeddings=[query_emb],
+            n_results=2  # 🔹 birden fazla sonuç getirelim (opsiyonel)
+        )
+        
+        # Belge içeriğini al
+        docs = sonuc.get("documents", [])
+        metas = sonuc.get("metadatas", [])
+        ids = sonuc.get("ids", [])
+        
+        if not docs or not docs[0]:
+            return "Uyarı: İlgili belge bulunamadı. Lütfen farklı bir soru deneyin."
+        
+        # İlk eşleşme
+        icerik = docs[0][0]
+        meta = metas[0][0] if metas and metas[0] else {}
+        doc_id = ids[0][0] if ids and ids[0] else "bilinmiyor"
+        
+        # Sistem promptu
+        system_prompt = (
+            "Sen kumaş üretim süreçleri üzerine uzman bir danışmansın. "
+            "Sadece aşağıda sağlanan teknik analizlere göre cevap ver. "
+            "Bilgi yetersizse 'Bilmiyorum' de. Kendi uydurduğun bilgileri kullanma."
+        )
+        
+        # LLM çağrısı
+        chat = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Soru: {soru}\n\nID: {doc_id}\nMetadata: {meta}\n\nVeri:\n{icerik}"}
+            ]
+        )
+        
+        return chat.choices[0].message.content
+        
+    except Exception as e:
+        return f"Sorgu hata verdi: {e}"
 
-# En alakalı belgeyi sorgula (embedding ile)
-try:
-    query_emb = get_embedding(soru)
-    sonuc = collection.query(
-        query_embeddings=[query_emb],
-        n_results=1
-    )
-except Exception as e:
-    print(f"Sorgu hata verdi: {e}")
-    exit(1)
-
-# Belge içeriğini güvenli biçimde al
-docs = sonuc.get("documents", [])
-if not docs or not docs[0]:
-    print("Uyarı: İlgili belge bulunamadı. Lütfen farklı bir soru deneyin.")
-    exit(0)
-
-icerik = docs[0][0]
-
-# Sistem promptu
-system_prompt = (
-    "Sen kumaş üretim süreçleri üzerine uzman bir danışmansın. "
-    "Sadece aşağıda sağlanan teknik analizlere göre cevap ver. "
-    "Bilgi yetersizse 'Bilmiyorum' de. Kendi uydurduğun bilgileri kullanma."
-)
-
-# OpenAI'den cevap al (v1 SDK)
-chat = openai_client.chat.completions.create(
-    model="gpt-4o-mini",
-    messages=[
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": f"{soru}\n\nVeri:\n{icerik}"}
-    ]
-)
-
-print("\nCevap:\n", chat.choices[0].message.content)
+# CLI için ana kod
+if __name__ == "__main__":
+    # Soru al (CLI argümanı varsa onu kullan)
+    if len(sys.argv) > 1:
+        soru = " ".join(sys.argv[1:])
+    else:
+        soru = input("Soru: ")
+    
+    cevap = ask_question(soru)
+    print("\n🔹 Cevap:\n", cevap)

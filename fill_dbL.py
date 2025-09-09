@@ -9,7 +9,7 @@ from openai import OpenAI
 load_dotenv()
 
 # ChromaDB (kalıcı) başlat
-client = chromadb.PersistentClient(path="chroma_db")
+client = chromadb.PersistentClient(path="chromab_db")
 collection = client.get_or_create_collection(name="uretim_analizleri")
 
 # OpenAI Embedding istemcisi
@@ -23,7 +23,7 @@ def get_embedding(text: str) -> list:
     )
     return response.data[0].embedding
 
-with open("data/case_cards.jsonl", "r", encoding="utf-8") as f:
+with open("data/case_cards_new.jsonl", "r", encoding="utf-8") as f:
     for i, line in enumerate(tqdm(f)):
         line = line.strip()
         if not line:
@@ -33,15 +33,14 @@ with open("data/case_cards.jsonl", "r", encoding="utf-8") as f:
 
         prompt = item.get("prompt", "")
         completion = item.get("completion", {})
-        
-        # Tamamlayıcı metni birleştir
-        full_text = f"{prompt}\n\n"
-        full_text += f"Özet: {completion.get('summary', '')}\n"
-        full_text += f"Neden Analizi: {completion.get('root_cause_analysis', '')}\n"
-        full_text += f"Anında Aksiyonlar: {', '.join(completion.get('immediate_actions', []))}\n"
-        full_text += f"Uzun Vadeli Aksiyonlar: {', '.join(completion.get('long_term_actions', []))}\n"
-        full_text += f"Beklenen Sonuç: {completion.get('expected_outcome', '')}"
 
+        # 🔹 Yeni completion yapısı
+        full_text = f"{prompt}\n\n"
+        full_text += f"Cevap: {completion.get('answer', '')}\n"
+        full_text += f"Gerekçe (özet): {completion.get('rationale_brief', '')}\n"
+        full_text += f"Önerilen Adımlar: {completion.get('next_steps', '')}"
+
+        # Metadata temizleme
         metadata = item.get("metadata", {})
         sanitized_metadata = {}
         for key, value in metadata.items():
@@ -58,6 +57,5 @@ with open("data/case_cards.jsonl", "r", encoding="utf-8") as f:
             metadatas=[sanitized_metadata],
             ids=[item.get("id", f"item_{i}")]
         )
-
 
 print("Veritabanı başarıyla oluşturuldu.")
